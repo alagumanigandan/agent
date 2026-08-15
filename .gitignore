@@ -1,0 +1,18 @@
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# IDE
+.idea/
+
+# Generated files
+output/
+**/output/
+*.png
+
+# Local databases
+*.db

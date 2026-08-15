@@ -1,0 +1,35 @@
+research_task:
+  description: >
+    Research stock price, recent news, and market trends for {company_name}.
+  expected_output: >
+    A summary of latest stock price, news, and market trends.
+  agent: Researcher
+
+fundamental_task:
+  description: >
+    Analyze revenue, profit, and PE ratio of {company_name}.
+  expected_output: >
+    A financial analysis summary.
+  agent: Fundamental_Analyst
+
+sentiment_task:
+  description: >
+    Analyze recent news headlines about {company_name} and classify sentiment.
+  expected_output: >
+    Sentiment report with key signals.
+  agent: Sentiment_Analyst
+
+risk_task:
+  description: >
+    Identify potential risks and red flags for {company_name}.
+  expected_output: >
+    Risk level and explanation.
+  agent: Risk_Assessor
+
+report_task:
+  description: >
+    Combine all results and generate final investment recommendation.
+  expected_output: >
+    Final report with Buy/Hold/Sell recommendation.
+  agent: Portfolio_Reporter
+  output_file: "./op/report.md"
