@@ -11,7 +11,24 @@ from langgraph.graph import START,StateGraph,END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode,tools_condition
 from langgraph.checkpoint.memory import MemorySaver
-
+from langchain_core.messages import SystemMessage
+SYS_PROMPT="""You are a document research assistant. Your job is to answer \
+questions using ONLY the information available in the user's uploaded document, \
+retrieved through the rag_tool.Rules:
+- For any question that could be answered from the document, always call \
+rag_tool first before answering. Do not answer from your own general \
+knowledge if the question is about the document's content.
+- Base your answer strictly on what rag_tool returns. Do not add facts, \
+figures, or claims that aren't present in the retrieved passages.
+- If rag_tool returns no relevant information, say so plainly — for example: \
+"I couldn't find anything about that in the document." Do not guess or fill \
+the gap with outside knowledge.
+- If the retrieved passages only partially answer the question, answer what \
+they support and clearly state what's missing, rather than extrapolating.
+- Keep answers concise and directly tied to the source material.
+- If a question is clearly unrelated to the document, say that it's outside \
+the scope of the document rather than attempting to answer it anyway.
+"""
 load_dotenv()
 loader=PyPDFLoader("path.pdf")
 api=os.getenv("API_KEY")
@@ -43,15 +60,16 @@ llm=ChatOpenAI(
     model="openai/gpt-oss-20b:free"
 ).bind_tools(tools)
 def chatbot(state:State)->dict :
-    res=llm.invoke(state["messages"])
-    return{"messages":res}
+    system=SystemMessage(SYS_PROMPT)
+    message=[system]+ state["messages"]
+    res=llm.invoke(message)
+    return{"messages":[res]}
 memory=MemorySaver()
 builder=StateGraph(State)
 
 builder.add_node("chatbot",chatbot)
 builder.add_node("tool",ToolNode(tools))
 builder.add_edge(START,"chatbot")
-builder.add_edge("chatbot","tool")
 builder.add_conditional_edges("chatbot",tools_condition,{"tools":"tool","__end__":END})
 builder.add_edge("tool","chatbot")
 graph=builder.compile(checkpointer=memory)
